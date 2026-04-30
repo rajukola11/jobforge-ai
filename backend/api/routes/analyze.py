@@ -12,8 +12,15 @@ async def analyze(
     job_url: str = Form(None),
     file: UploadFile = File(None)
 ):
-    
-    # 📄 Handle file upload
+
+    # ❌ Validate input
+    if not cv_text and not file:
+        return {"error": "CV is required"}
+
+    if not job_text and not job_url:
+        return {"error": "Job description or URL is required"}
+
+    # 📄 Extract CV
     if file:
         if file.filename.endswith(".pdf"):
             cv_content = extract_text_from_pdf(file.file)
@@ -24,8 +31,10 @@ async def analyze(
     else:
         cv_content = cv_text
 
+    # 📄 Job description
     job_description = get_job_description(job_text, job_url)
 
+    # 🧠 AI
     result = await analyze_with_ai(cv_content, job_description)
 
-    return {"result": result}
+    return result
